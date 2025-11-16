@@ -1,0 +1,54 @@
+services:
+  db:
+    image: postgres:16
+    container_name: nexal-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nexal_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: nexal-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  backend:
+    container_name: nexal-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.docker
+    environment:
+      # keep DATABASE_URL inside .env.docker so it's not overridden here
+      REDIS_URL: redis://redis:6379/0
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "8000:8000"
+
+  frontend:
+    container_name: nexal-frontend
+    build:
+      context: ./my-app
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    depends_on:
+      - backend
+    ports:
+      - "3001:3000"  # frontend available on http://localhost:3001
+
+volumes:
+  pgdata:

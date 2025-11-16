@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+python-dotenv
+httpx
+passlib[bcrypt]
+python-jose[cryptography]
+pydantic
+groq
+scikit-learn
+numpy
+faiss-cpu==1.8.0.post1
